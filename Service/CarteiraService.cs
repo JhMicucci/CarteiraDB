@@ -1,5 +1,4 @@
-﻿
-using CarteiraDB.Models;
+﻿using CarteiraDB.Models;
 using CarteiraDB.Persistence;
 using CarteiraDB.Persistence.Repository;
 using System;
@@ -71,6 +70,106 @@ namespace CarteiraDB.Services
                 EnderecoCarteira = row["endereco_carteira"].ToString(),
                 DataCriacao = Convert.ToDateTime(row["data_criacao"]),
                 Status = Enum.Parse<Status>(row["status"].ToString())
+            };
+        }
+
+        public SaldoCarteiraResponse BuscarSaldos(string enderecoCarteira)
+        {
+            // Primeiro verifica se a carteira existe
+            var carteira = _carteiraRepo.BuscarPorEndereco(enderecoCarteira);
+            if (carteira == null)
+                throw new KeyNotFoundException("Carteira não encontrada");
+
+            var saldosRows = _carteiraRepo.BuscarSaldos(enderecoCarteira);
+            
+            var response = new SaldoCarteiraResponse
+            {
+                EnderecoCarteira = enderecoCarteira,
+                Saldos = new List<SaldoMoeda>()
+            };
+
+            foreach (var row in saldosRows)
+            {
+                response.Saldos.Add(new SaldoMoeda
+                {
+                    CodigoMoeda = row["codigo_moeda"].ToString(),
+                    NomeMoeda = row["nome_moeda"].ToString(),
+                    Tipo = row["tipo"].ToString(),
+                    Saldo = Convert.ToDecimal(row["saldo"]),
+                    DataAtualizacao = Convert.ToDateTime(row["data_atualizacao"])
+                });
+            }
+
+            return response;
+        }
+
+        public OperacaoResponse ProcessarDeposito(string enderecoCarteira, DepositoRequest depositoRequest)
+        {
+            // Primeiro verifica se a carteira existe
+            var carteira = _carteiraRepo.BuscarPorEndereco(enderecoCarteira);
+            if (carteira == null)
+                throw new KeyNotFoundException("Carteira não encontrada");
+
+            // Verificar se a carteira não está bloqueada
+            var status = Enum.Parse<Status>(carteira["status"].ToString());
+            if (status == Status.bloqueada)
+                throw new InvalidOperationException("Carteira está bloqueada");
+
+            var resultado = _carteiraRepo.ProcessarDeposito(enderecoCarteira, depositoRequest.CodigoMoeda, depositoRequest.Valor);
+
+            return new OperacaoResponse
+            {
+                IdMovimento = Convert.ToInt32(resultado["id_movimento"]),
+                EnderecoCarteira = resultado["endereco_carteira"].ToString(),
+                CodigoMoeda = resultado["codigo_moeda"].ToString(),
+                NomeMoeda = ObterNomeMoeda(depositoRequest.CodigoMoeda),
+                Tipo = resultado["tipo"].ToString(),
+                Valor = Convert.ToDecimal(resultado["valor"]),
+                TaxaValor = Convert.ToDecimal(resultado["taxa_valor"]),
+                SaldoAnterior = Convert.ToDecimal(resultado["saldo_anterior"]),
+                SaldoAtual = Convert.ToDecimal(resultado["saldo_atual"]),
+                DataHora = DateTime.Now
+            };
+        }
+
+        public OperacaoResponse ProcessarSaque(string enderecoCarteira, SaqueRequest saqueRequest)
+        {
+            // Primeiro verifica se a carteira existe
+            var carteira = _carteiraRepo.BuscarPorEndereco(enderecoCarteira);
+            if (carteira == null)
+                throw new KeyNotFoundException("Carteira não encontrada");
+
+            // Verificar se a carteira não está bloqueada
+            var status = Enum.Parse<Status>(carteira["status"].ToString());
+            if (status == Status.bloqueada)
+                throw new InvalidOperationException("Carteira está bloqueada");
+
+            var resultado = _carteiraRepo.ProcessarSaque(enderecoCarteira, saqueRequest.CodigoMoeda, saqueRequest.Valor, saqueRequest.ChavePrivada);
+
+            return new OperacaoResponse
+            {
+                IdMovimento = Convert.ToInt32(resultado["id_movimento"]),
+                EnderecoCarteira = resultado["endereco_carteira"].ToString(),
+                CodigoMoeda = resultado["codigo_moeda"].ToString(),
+                NomeMoeda = ObterNomeMoeda(saqueRequest.CodigoMoeda),
+                Tipo = resultado["tipo"].ToString(),
+                Valor = Convert.ToDecimal(resultado["valor"]),
+                TaxaValor = Convert.ToDecimal(resultado["taxa_valor"]),
+                SaldoAnterior = Convert.ToDecimal(resultado["saldo_anterior"]),
+                SaldoAtual = Convert.ToDecimal(resultado["saldo_atual"]),
+                DataHora = DateTime.Now
+            };
+        }
+
+        private string ObterNomeMoeda(string codigoMoeda)
+        {
+            return codigoMoeda switch
+            {
+                "BTC" => "Bitcoin",
+                "ETH" => "Ethereum",
+                "SOL" => "Solana",
+                "USD" => "US Dollar",
+                _ => codigoMoeda
             };
         }
     }
