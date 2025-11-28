@@ -1,4 +1,5 @@
-﻿using CarteiraDB.Models;
+﻿using CarteiraDB.Dtos;
+using CarteiraDB.Models;
 using CarteiraDB.Persistence;
 using CarteiraDB.Persistence.Repository;
 using System;
@@ -172,5 +173,64 @@ namespace CarteiraDB.Services
                 _ => codigoMoeda
             };
         }
+
+
+        public OperacaoConversaoResponse ProcessarConversao(string enderecoCarteira, ConversaoRequest request)
+        {
+            var carteira = _carteiraRepo.BuscarPorEndereco(enderecoCarteira);
+            if (carteira == null)
+                throw new KeyNotFoundException("Carteira não encontrada");
+
+            var status = Enum.Parse<Status>(carteira["status"].ToString());
+            if (status == Status.bloqueada)
+                throw new InvalidOperationException("Carteira está bloqueada");
+
+            var resultado = _carteiraRepo.ProcessarConversao(enderecoCarteira, request.MoedaOrigem, request.MoedaDestino, request.ValorOrigem);
+
+            return new OperacaoConversaoResponse
+            {
+                IdConversao = Convert.ToInt32(resultado["id_conversao"]),
+                EnderecoCarteira = resultado["endereco_carteira"].ToString(),
+                MoedaOrigem = resultado["moeda_origem"].ToString(),
+                MoedaDestino = resultado["moeda_destino"].ToString(),
+                ValorOrigem = Convert.ToDecimal(resultado["valor_origem"]),
+                ValorDestino = Convert.ToDecimal(resultado["valor_destino"]),
+                TaxaValor = Convert.ToDecimal(resultado["taxa_valor"]),
+                Cotacao = Convert.ToDecimal(resultado["cotacao"]),
+                DataHora = DateTime.Now
+            };
+        }
+
+
+
+        public OperacaoTransferenciaResponse ProcessarTransferencia(string enderecoOrigem, TransferenciaRequest request)
+        {
+            var carteiraOrigem = _carteiraRepo.BuscarPorEndereco(enderecoOrigem);
+            if (carteiraOrigem == null)
+                throw new KeyNotFoundException("Carteira origem não encontrada");
+
+            var carteiraDestino = _carteiraRepo.BuscarPorEndereco(request.EnderecoDestino);
+            if (carteiraDestino == null)
+                throw new KeyNotFoundException("Carteira destino não encontrada");
+
+            var status = Enum.Parse<Status>(carteiraOrigem["status"].ToString());
+            if (status == Status.bloqueada)
+                throw new InvalidOperationException("Carteira origem está bloqueada");
+
+            var resultado = _carteiraRepo.ProcessarTransferencia(enderecoOrigem, request.EnderecoDestino, request.CodigoMoeda, request.Valor, request.ChavePrivada);
+
+            return new OperacaoTransferenciaResponse
+            {
+                IdTransferencia = Convert.ToInt32(resultado["id_transferencia"]),
+                EnderecoOrigem = resultado["endereco_origem"].ToString(),
+                EnderecoDestino = resultado["endereco_destino"].ToString(),
+                CodigoMoeda = resultado["codigo_moeda"].ToString(),
+                Valor = Convert.ToDecimal(resultado["valor"]),
+                TaxaValor = Convert.ToDecimal(resultado["taxa_valor"]),
+                DataHora = DateTime.Now
+            };
+        }
+
+
     }
 }

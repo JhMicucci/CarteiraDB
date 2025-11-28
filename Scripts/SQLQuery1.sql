@@ -58,3 +58,37 @@ INSERT INTO MOEDA (codigo_moeda, nome_moeda, tipo) VALUES
 ('SOL', 'Solana', 'Criptomoeda'),
 ('USD', 'US Dollar', 'Fiduciaria');
 
+
+
+CREATE TABLE CONVERSAO (
+    id_conversao BIGINT IDENTITY(1,1) PRIMARY KEY,
+    endereco_carteira VARCHAR(255) NOT NULL,
+    id_moeda_origem SMALLINT NOT NULL,
+    id_moeda_destino SMALLINT NOT NULL,
+    valor_origem DECIMAL(18,8) NOT NULL,
+    valor_destino DECIMAL(18,8) NOT NULL,
+    taxa_percentual DECIMAL(18,8) NOT NULL,
+    taxa_valor DECIMAL(18,8) NOT NULL,
+    cotacao_utilizada DECIMAL(18,8) NOT NULL,
+    data_hora DATETIME NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_CONVERSAO_CARTEIRA FOREIGN KEY (endereco_carteira) REFERENCES carteira(endereco_carteira),
+    CONSTRAINT FK_CONVERSAO_MOEDA_ORIGEM FOREIGN KEY (id_moeda_origem) REFERENCES MOEDA(id),
+    CONSTRAINT FK_CONVERSAO_MOEDA_DESTINO FOREIGN KEY (id_moeda_destino) REFERENCES MOEDA(id)
+    );
+
+
+CREATE TABLE TRANSFERENCIA(
+
+    id_transferencia BIGINT IDENTITY(1,1) PRIMARY KEY,
+    endereco_origem VARCHAR(255) NOT NULL,
+    endereco_destino VARCHAR(255) NOT NULL,
+    id_moeda SMALLINT NOT NULL,
+    valor DECIMAL(18,8) NOT NULL,
+    taxa_Valor DECIMAL(18,8) NOT NULL,
+    data_hora DATETIME NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_TRANSFERENCIA_CARTEIRA_ORIGEM FOREIGN KEY (endereco_origem) REFERENCES carteira(endereco_carteira),
+    CONSTRAINT FK_TRANSFERENCIA_CARETEIRA_DESTINO FOREIGN KEY (endereco_destino) REFERENCES carteira(endereco_carteira),
+    CONSTRAINT FK_TRANSFERENCIA_MOEDA FOREIGN KEY(id_moeda) REFERENCES MOEDA(id))
+    

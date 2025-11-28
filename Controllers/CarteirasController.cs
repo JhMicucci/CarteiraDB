@@ -1,6 +1,6 @@
 ﻿namespace CarteiraDB.Controllers
 {
-
+    using CarteiraDB.Dtos;
     using CarteiraDB.Models;
     using CarteiraDB.Services;
   
@@ -169,7 +169,60 @@
                     return StatusCode(500, ex.Message);
                 }
             }
+
+
+        [HttpPost("{enderecoCarteira}/conversoes")]
+        public ActionResult<OperacaoConversaoResponse> ConverterMoeda(string enderecoCarteira, [FromBody] ConversaoRequest request)
+        {
+            try
+            {
+                var resultado = _service.ProcessarConversao(enderecoCarteira, request);
+                return Ok(resultado);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { mensagem = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro interno", detalhe = ex.Message });
+            }
         }
-    
+
+        [HttpPost("{enderecoOrigem}/transferencias")]
+        public ActionResult<OperacaoTransferenciaResponse> Transferir(string enderecoOrigem, [FromBody] TransferenciaRequest request)
+        {
+            try
+            {
+                var resultado = _service.ProcessarTransferencia(enderecoOrigem, request);
+                return Ok(resultado);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { mensagem = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { mensagem = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro interno", detalhe = ex.Message });
+            }
+        }
+
+
+    }
+
+
+
 
 }
