@@ -98,11 +98,12 @@ CREATE TABLE DEPOSITO_SAQUE (
 
 
 
+
 CREATE TABLE CONVERSAO (
     id_conversao BIGINT IDENTITY(1,1) PRIMARY KEY,
-    endereco_carteira VARCHAR(255) NOT NULL,
-    id_moeda_origem SMALLINT NOT NULL,
-    id_moeda_destino SMALLINT NOT NULL,
+    endereco_carteira VARCHAR(100) NOT NULL,
+    id_moeda_origem INT NOT NULL,
+    id_moeda_destino INT NOT NULL,
     valor_origem DECIMAL(18,8) NOT NULL,
     valor_destino DECIMAL(18,8) NOT NULL,
     taxa_percentual DECIMAL(18,8) NOT NULL,
@@ -119,9 +120,9 @@ CREATE TABLE CONVERSAO (
 CREATE TABLE TRANSFERENCIA(
 
     id_transferencia BIGINT IDENTITY(1,1) PRIMARY KEY,
-    endereco_origem VARCHAR(255) NOT NULL,
-    endereco_destino VARCHAR(255) NOT NULL,
-    id_moeda SMALLINT NOT NULL,
+    endereco_origem VARCHAR(100) NOT NULL,
+    endereco_destino VARCHAR(100) NOT NULL,
+    id_moeda INT NOT NULL,
     valor DECIMAL(18,8) NOT NULL,
     taxa_Valor DECIMAL(18,8) NOT NULL,
     data_hora DATETIME NOT NULL DEFAULT GETDATE(),

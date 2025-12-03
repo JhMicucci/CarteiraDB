@@ -11,9 +11,10 @@ namespace CarteiraDB.Service
 
         private readonly CarteiraRepository _carteiraRepo;
 
-        public ConversaoService(ConversaoRepository conversaoRepo)
+        public ConversaoService(ConversaoRepository conversaoRepo, CarteiraRepository carteiraRepo)
         {
             _conversaoRepo = conversaoRepo;
+            _carteiraRepo = carteiraRepo;
         }
 
 
