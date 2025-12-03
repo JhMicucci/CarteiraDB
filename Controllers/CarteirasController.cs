@@ -2,6 +2,7 @@
 {
     using CarteiraDB.Dtos;
     using CarteiraDB.Models;
+    using CarteiraDB.Service;
     using CarteiraDB.Services;
   
     using Microsoft.AspNetCore.Mvc;
@@ -14,9 +15,28 @@
         {
             private readonly CarteiraService _service;
 
-            public CarteirasController(CarteiraService service)
-            {
-                _service = service;
+            private readonly MoedaService _moedaService;
+
+            private readonly SaldoService _saldoService;
+
+            private readonly ConversaoService _conversaoService;
+
+            private readonly Deposito_SaqueService _deposito_SaqueService;
+
+            private readonly TransferenciaService _transferenciaService;
+
+
+
+
+            public CarteirasController(CarteiraService service, MoedaService moedaService, SaldoService saldoService, ConversaoService conversaoService, Deposito_SaqueService deposito_SaqueService, TransferenciaService transferenciaService)
+                    {
+                        _service = service;
+                        _moedaService = moedaService;
+                        _saldoService = saldoService;
+                        _conversaoService = conversaoService;
+                        _deposito_SaqueService = deposito_SaqueService;
+                        _transferenciaService = transferenciaService;
+
             }
 
             [HttpPost]
@@ -62,13 +82,13 @@
             }
 
             [HttpGet("{enderecoCarteira}/saldos")]
-            [ProducesResponseType(typeof(SaldoCarteiraResponse), 200)]
+            [ProducesResponseType(typeof(SaldoCarteiraResponseDto), 200)]
             [ProducesResponseType(404)]
-            public ActionResult<SaldoCarteiraResponse> BuscarSaldos(string enderecoCarteira)
+            public ActionResult<SaldoCarteiraResponseDto> BuscarSaldos(string enderecoCarteira)
             {
                 try
                 {
-                    var saldos = _service.BuscarSaldos(enderecoCarteira);
+                    var saldos = _saldoService.BuscarSaldos(enderecoCarteira);
                     return Ok(saldos);
                 }
                 catch (KeyNotFoundException)
@@ -82,17 +102,17 @@
             }
 
             [HttpPost("{enderecoCarteira}/depositos")]
-            [ProducesResponseType(typeof(OperacaoResponse), 200)]
+            [ProducesResponseType(typeof(OperacaoResponseDto), 200)]
             [ProducesResponseType(400)]
             [ProducesResponseType(404)]
-            public ActionResult<OperacaoResponse> ProcessarDeposito(string enderecoCarteira, [FromBody] DepositoRequest depositoRequest)
+            public ActionResult<OperacaoResponseDto> ProcessarDeposito(string enderecoCarteira, [FromBody] DepositoRequestDto depositoRequest)
             {
                 try
                 {
                     if (!ModelState.IsValid)
                         return BadRequest(ModelState);
 
-                    var operacao = _service.ProcessarDeposito(enderecoCarteira, depositoRequest);
+                    var operacao = _deposito_SaqueService.ProcessarDeposito(enderecoCarteira, depositoRequest);
                     return Ok(operacao);
                 }
                 catch (KeyNotFoundException)
@@ -114,18 +134,18 @@
             }
 
             [HttpPost("{enderecoCarteira}/saques")]
-            [ProducesResponseType(typeof(OperacaoResponse), 200)]
+            [ProducesResponseType(typeof(OperacaoResponseDto), 200)]
             [ProducesResponseType(400)]
             [ProducesResponseType(401)]
             [ProducesResponseType(404)]
-            public ActionResult<OperacaoResponse> ProcessarSaque(string enderecoCarteira, [FromBody] SaqueRequest saqueRequest)
+            public ActionResult<OperacaoResponseDto> ProcessarSaque(string enderecoCarteira, [FromBody] SaqueRequestDto saqueRequest)
             {
                 try
                 {
                     if (!ModelState.IsValid)
                         return BadRequest(ModelState);
 
-                    var operacao = _service.ProcessarSaque(enderecoCarteira, saqueRequest);
+                    var operacao = _deposito_SaqueService.ProcessarSaque(enderecoCarteira, saqueRequest);
                     return Ok(operacao);
                 }
                 catch (KeyNotFoundException)
@@ -172,11 +192,11 @@
 
 
         [HttpPost("{enderecoCarteira}/conversoes")]
-        public ActionResult<OperacaoConversaoResponse> ConverterMoeda(string enderecoCarteira, [FromBody] ConversaoRequest request)
+        public ActionResult<OperacaoConversaoResponseDto> ConverterMoeda(string enderecoCarteira, [FromBody] ConversaoRequestDto request)
         {
             try
             {
-                var resultado = _service.ProcessarConversao(enderecoCarteira, request);
+                var resultado = _conversaoService.ProcessarConversao(enderecoCarteira, request);
                 return Ok(resultado);
             }
             catch (KeyNotFoundException ex)
@@ -194,11 +214,11 @@
         }
 
         [HttpPost("{enderecoOrigem}/transferencias")]
-        public ActionResult<OperacaoTransferenciaResponse> Transferir(string enderecoOrigem, [FromBody] TransferenciaRequest request)
+        public ActionResult<OperacaoTransferenciaResponseDto> Transferir(string enderecoOrigem, [FromBody] TransferenciaRequestDto request)
         {
             try
             {
-                var resultado = _service.ProcessarTransferencia(enderecoOrigem, request);
+                var resultado = _transferenciaService.ProcessarTransferencia(enderecoOrigem, request);
                 return Ok(resultado);
             }
             catch (KeyNotFoundException ex)
