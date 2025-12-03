@@ -38,7 +38,7 @@ namespace CarteiraDB.Persistence.Repository
                     try
                     {
                         // 1. Validar chave privada da origem
-                        if (_carteiraRepo.ValidarChavePrivada(enderecoOrigem, chavePrivada))
+                        if (!_carteiraRepo.ValidarChavePrivada(enderecoOrigem, chavePrivada))
                             throw new UnauthorizedAccessException("Chave privada inválida");
 
                         // 2. Buscar ID da moeda
