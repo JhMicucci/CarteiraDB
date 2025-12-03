@@ -51,7 +51,7 @@ CREATE TABLE carteira (
 -- Nova tabela MOEDA
 CREATE TABLE MOEDA (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    codigo_moeda VARCHAR(10) NOT NULL UNIQUE,  -- BTC, ETH, SOL, USD
+    codigo_moeda VARCHAR(10) NOT NULL UNIQUE,  -- BTC, ETH, SOL, USD, BRL
     nome_moeda VARCHAR(50) NOT NULL,
     tipo VARCHAR(20) NOT NULL,  -- Criptomoeda, Fiduciaria, etc
     data_criacao DATETIME NOT NULL DEFAULT GETDATE(),

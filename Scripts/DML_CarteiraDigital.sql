@@ -4,7 +4,7 @@
 IF EXISTS (SELECT * FROM MOEDA WHERE tipo IS NULL OR tipo = '')
     BEGIN
         UPDATE MOEDA SET tipo = 'Criptomoeda' WHERE codigo_moeda IN ('BTC', 'ETH', 'SOL');
-        UPDATE MOEDA SET tipo = 'Fiduciaria' WHERE codigo_moeda = 'USD';
+        UPDATE MOEDA SET tipo = 'Fiduciaria' WHERE codigo_moeda IN( 'USD','BRL');
         PRINT 'Tipos de moeda atualizados na tabela MOEDA';
     END
     ELSE
@@ -38,4 +38,5 @@ INSERT INTO MOEDA (codigo_moeda, nome_moeda, tipo) VALUES
 ('BTC', 'Bitcoin', 'Criptomoeda'),
 ('ETH', 'Ethereum', 'Criptomoeda'),
 ('SOL', 'Solana', 'Criptomoeda'),
-('USD', 'US Dollar', 'Fiduciaria');
+('USD', 'US Dollar', 'Fiduciaria'),
+('BRl', 'Real', 'Fiduciaria');
