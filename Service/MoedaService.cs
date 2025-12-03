@@ -23,6 +23,7 @@ namespace CarteiraDB.Service
                 "ETH" => "Ethereum",
                 "SOL" => "Solana",
                 "USD" => "US Dollar",
+                "BRL"=>"Real",
                 _ => codigoMoeda
             };
         }
